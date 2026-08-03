@@ -1,45 +1,30 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Accented } from "../../components/ui/Accented";
 import { useReducedMotion } from "../../lib/useReducedMotion";
 
-/**
- * Pace, in milliseconds. A full sentence gets a real breath after it and a
- * clause gets half of one, which is the difference between text being written
- * and text being metered out by a machine.
- */
-const STEP = 62;
-const CLAUSE = 210;
-const SENTENCE = 440;
+/** Seconds between one word starting to appear and the next. */
+const STEP = 0.032;
+
+/** Extra pause once a sentence has landed, so the text arrives in phrases. */
+const SENTENCE = 0.26;
+const CLAUSE = 0.1;
 
 /**
- * Nobody types on a metronome. A long word takes longer than a short one, and
- * every interval is scattered by up to a third — an exactly even rhythm is the
- * single thing that gives a typing effect away as an animation.
- */
-const delayAfter = (word: string) => {
-  const base = /[.!?]["»)]?$/.test(word)
-    ? SENTENCE
-    : /[,;:—–]$/.test(word)
-      ? CLAUSE
-      : STEP + word.trim().length * 5;
-
-  return base * (0.82 + Math.random() * 0.36);
-};
-
-/**
- * Text that arrives as if it were being written.
+ * Text that arrives a word at a time, each one fading up into place.
  *
- * A word at a time rather than a character at a time, and deliberately: these
- * three paragraphs are about 750 characters, and at any speed slow enough to
- * read as typing that is six seconds of someone watching a cursor. At word
- * granularity with punctuation pauses it takes about three, and reads as fast
- * typing rather than as a stagger.
+ * The schedule is computed once, at render, and written into every word as a
+ * `transition-delay`; the container then flips a single class and the browser
+ * runs the whole cascade on the compositor. Nothing is timed in JavaScript.
  *
- * Every word is in the DOM from the first frame and only its opacity changes,
- * so nothing reflows while it runs and a screen reader gets the whole text
- * immediately instead of a paragraph that grows underneath it. The hairline
- * caret is the one thing that says "typing" rather than "fading in", so it is
- * a hairline and not a blinking block, and it leaves when the text is done.
+ * That is the point. The previous version advanced a counter in a rAF loop and
+ * scattered each interval to look human, and the result read as ragged rather
+ * than as writing — every dropped frame showed, and the randomness stopped
+ * being lifelike and started being uneven. Long overlapping fades on a fixed
+ * grid look far more like a hand than jitter does.
+ *
+ * Every word is in the DOM from the first frame and only opacity and a 4px
+ * offset move, so nothing reflows and a screen reader has the whole text at
+ * once.
  */
 export function Typed({
   paragraphs,
@@ -51,44 +36,29 @@ export function Typed({
   const containerRef = useRef<HTMLDivElement>(null);
   const still = useReducedMotion();
 
+  // One cumulative schedule across all three paragraphs, so the pauses between
+  // sentences carry over the paragraph breaks instead of resetting.
+  const schedule = useMemo(() => {
+    let clock = 0;
+    return paragraphs.map((paragraph) =>
+      paragraph.split(" ").map((word) => {
+        const delay = clock;
+        clock += STEP;
+        if (/[.!?]["»)]?$/.test(word)) clock += SENTENCE;
+        else if (/[,;:—–]$/.test(word)) clock += CLAUSE;
+        return { word, delay };
+      }),
+    );
+  }, [paragraphs]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const words = Array.from(container.querySelectorAll<HTMLElement>("[data-word]"));
-    if (words.length === 0) return;
-
     if (still) {
-      container.classList.add("is-done");
-      for (const word of words) word.classList.add("is-typed");
+      container.classList.add("is-writing");
       return;
     }
-
-    let frame = 0;
-    let index = 0;
-    let pending = 0;
-    let last = 0;
-
-    const tick = (now: number) => {
-      if (last === 0) last = now;
-      pending -= now - last;
-      last = now;
-
-      while (pending <= 0 && index < words.length) {
-        words[index - 1]?.classList.remove("is-caret");
-        words[index].classList.add("is-typed", "is-caret");
-        pending += delayAfter(words[index].textContent ?? "");
-        index += 1;
-      }
-
-      if (index >= words.length) {
-        words[words.length - 1]?.classList.remove("is-caret");
-        container.classList.add("is-done");
-        return;
-      }
-
-      frame = requestAnimationFrame(tick);
-    };
 
     // Starts when the block is genuinely being looked at, not when it grazes
     // the bottom of the screen — otherwise it has finished before it arrives.
@@ -96,24 +66,25 @@ export function Typed({
       ([entry]) => {
         if (!entry.isIntersecting) return;
         observer.disconnect();
-        frame = requestAnimationFrame(tick);
+        container.classList.add("is-writing");
       },
       { threshold: 0.25 },
     );
-    observer.observe(container);
 
-    return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-    };
-  }, [still, paragraphs]);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [still]);
 
   return (
     <div ref={containerRef} className={`typed ${className}`}>
-      {paragraphs.map((paragraph, index) => (
+      {schedule.map((words, index) => (
         <p key={index} className={index > 0 ? "mt-6" : undefined}>
-          {paragraph.split(" ").map((word, position) => (
-            <span key={position} data-word className="type-word">
+          {words.map(({ word, delay }, position) => (
+            <span
+              key={position}
+              className="type-word"
+              style={{ transitionDelay: `${delay.toFixed(3)}s` }}
+            >
               <Accented text={word} />{" "}
             </span>
           ))}

@@ -42,8 +42,16 @@ export function About() {
             />
           </div>
 
-          <div className="lg:sticky lg:top-32 lg:self-start">
-            <PointField className="block h-[clamp(300px,48vh,540px)] w-full" />
+          {/* Not pinned. A sticky column stops moving with the page while the
+              paragraphs beside it keep going, which is the two halves coming
+              apart — and it is what made the field look like it was lagging.
+              They scroll together now, and the field takes its progress from
+              the section rather than from its own box. */}
+          <div className="lg:self-start">
+            <PointField
+              anchorRef={ref}
+              className="block h-[clamp(300px,48vh,540px)] w-full"
+            />
             <p className="mt-6 text-[0.82rem] tracking-[0.01em] text-[var(--stage-fg-3)]">
               {t.about.figure}
             </p>

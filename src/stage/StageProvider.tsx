@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { smoothstep } from "../lib/anim";
-import { mixRgb, parseHex, toCss, toneOf, type Rgb } from "../lib/color";
+import { mixRgb, parseHex, toneOf } from "../lib/color";
+import { surfaceVars } from "../lib/surface";
 import { StageContext, type StageRegistry, type StageSource } from "./context";
 
 /** Where on the screen the stage asks "which section is this?". */
@@ -8,28 +9,6 @@ const PROBE = 0.5;
 
 /** How much scrolling a colour change is spread over, in viewport heights. */
 const BAND = 0.55;
-
-const INK = parseHex("#0a0a0b");
-const CHALK = parseHex("#f5f5f6");
-
-/**
- * How far the secondary and tertiary text tiers are mixed back into the
- * background they sit on.
- *
- * Deriving them this way rather than from two fixed greys is what makes one
- * page work on six colours. A fixed `#61616b` for tertiary text is tuned for a
- * near-black background; drop it on the deep red and it is a dark smudge on a
- * dark red, at about 1.6:1. Tinting the foreground with the stage instead keeps
- * the same *relationship* on white, on ink, on red, on navy, on yellow and on
- * light blue.
- */
-const TIER_2 = 0.35;
-const TIER_3 = 0.55;
-
-const rgba = ([r, g, b]: Rgb, alpha: number) =>
-  `rgb(${Math.round(r)} ${Math.round(g)} ${Math.round(b)} / ${alpha.toFixed(3)})`;
-
-const between = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /**
  * Paints the page.
@@ -120,37 +99,15 @@ export function StageProvider({ children }: { children: ReactNode }) {
       if (signature === previous) return;
       previous = signature;
 
-      const foreground = mixRgb(INK, CHALK, tone);
-      const css = toCss(colour);
+      // The same derivation the reverse of a project card uses on itself, so
+      // there is one definition of what a surface of a given colour looks like
+      // rather than two that can quietly drift apart.
+      const vars = surfaceVars(colour);
+      for (const [name, value] of Object.entries(vars)) {
+        root.style.setProperty(name, value);
+      }
 
-      root.style.setProperty("--stage", css);
-      root.style.setProperty("--stage-tone", tone.toFixed(3));
-      root.style.setProperty("--stage-fg", toCss(foreground));
-      root.style.setProperty("--stage-fg-2", toCss(mixRgb(foreground, colour, TIER_2)));
-      root.style.setProperty("--stage-fg-3", toCss(mixRgb(foreground, colour, TIER_3)));
-      root.style.setProperty("--stage-line", rgba(foreground, between(0.1, 0.16, tone)));
-
-      // Glass on paper is a white pane with a dark edge; glass on ink is a
-      // barely-there white film with a bright edge. Same recipe, opposite
-      // materials, interpolated rather than switched so the header stays
-      // legible through every transition.
-      root.style.setProperty(
-        "--glass-bg",
-        rgba(CHALK, between(0.55, 0.055, tone)),
-      );
-      root.style.setProperty("--glass-line", rgba(foreground, between(0.1, 0.14, tone)));
-      root.style.setProperty("--glass-line-hi", rgba(foreground, between(0.22, 0.36, tone)));
-      root.style.setProperty("--glass-sheen", rgba(CHALK, between(0.7, 0.16, tone)));
-      root.style.setProperty(
-        "--glass-shadow",
-        `0 1px 2px rgb(5 5 6 / ${between(0.05, 0.2, tone).toFixed(3)}), 0 18px 50px -18px rgb(5 5 6 / ${between(
-          0.18,
-          0.55,
-          tone,
-        ).toFixed(3)})`,
-      );
-
-      themeColor?.setAttribute("content", css);
+      themeColor?.setAttribute("content", vars["--stage"]);
     };
 
     frame = requestAnimationFrame(tick);

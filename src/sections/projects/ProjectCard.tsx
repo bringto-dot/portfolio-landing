@@ -11,6 +11,7 @@ import {
 } from "../../content/projects";
 import type { ProjectCopy } from "../../content/types";
 import { EASE } from "../../lib/anim";
+import { cardSurface } from "../../lib/surface";
 
 /** Degrees of tilt at the far corner. Past about five it stops reading as a
  *  surface catching the light and starts reading as a toy. */
@@ -41,6 +42,7 @@ export function ProjectCard({
   priority: boolean;
 }) {
   const active = offset === 0;
+  const surface = cardSurface(project.shot.placeholder);
   const ref = useRef<HTMLDivElement>(null);
   const press = useRef({ x: 0, y: 0 });
 
@@ -115,7 +117,6 @@ export function ProjectCard({
           >
             <GlassPanel
               flat
-              sheen
               radius="1.5rem"
               className="h-full w-full cursor-pointer p-2 md:p-2.5"
             >
@@ -167,32 +168,45 @@ export function ProjectCard({
               transform: "rotateY(180deg)",
             }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[1.5rem]">
-              {/* Fully opaque, deliberately.
-                  `backface-visibility` is not reliable once anything in the
-                  subtree creates a stacking context, and when it gives out the
-                  front face shows through the back mirror-imaged — the project
-                  render sitting behind its own description, unreadable. An
-                  opaque plate is correct regardless of what the compositor
-                  decides to do.
-
-                  The field behind the text is the project's own render at 40px
-                  wide, blown up: the card keeps the colours of the work it
-                  belongs to without anyone having to read anything through
-                  them. */}
-              <div className="absolute inset-0" style={{ background: project.stage }} />
+            <div
+              className="relative h-full w-full overflow-hidden rounded-[1.5rem]"
+              // The reverse is its own little stage, coloured by the project's
+              // screenshot rather than by the page. Earlier it washed the
+              // blurred render in the page colour, which made the card and the
+              // background behind it the same colour and stopped the card
+              // being an object at all. These variables inherit, so the text,
+              // the rules and the button on top all follow the field.
+              style={surface.vars as React.CSSProperties}
+            >
+              {/* Opaque, deliberately. `backface-visibility` is not reliable
+                  once anything in the subtree creates a stacking context, and
+                  when it gives out the front shows through mirror-imaged — the
+                  render sitting behind its own description. */}
               <img
                 src={shotBlur(project)}
                 alt=""
                 aria-hidden
                 width={40}
                 height={25}
-                className="absolute inset-0 h-full w-full scale-[1.25] object-cover opacity-55"
+                className="absolute inset-0 h-full w-full scale-[1.3] object-cover"
               />
+              {/* One flat wash, pushing the screenshot's average away from the
+                  middle until it can hold type. Not a tint in the page colour:
+                  that is what erased the palette. */}
+              <div className="absolute inset-0" style={{ background: surface.wash }} />
+
+              {/* Brushed metal: a broad diagonal highlight and a fine grain,
+                  in `overlay` so it works with whatever colour the field turned
+                  out to be instead of painting grey over it. */}
               <div
+                aria-hidden
                 className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(150deg, ${project.stage}cc, ${project.stage}f2 62%, ${project.stage})`,
+                  mixBlendMode: "overlay",
+                  background: `
+                    linear-gradient(112deg, rgb(255 255 255 / 0.30) 0%, rgb(255 255 255 / 0.04) 22%, transparent 42%, transparent 58%, rgb(255 255 255 / 0.14) 76%, rgb(0 0 0 / 0.20) 100%),
+                    repeating-linear-gradient(112deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 5px)
+                  `,
                 }}
               />
 

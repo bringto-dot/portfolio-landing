@@ -100,7 +100,6 @@
   --glass-line: rgb(10 10 11 / 0.1);
   --glass-line-hi: rgb(10 10 11 / 0.2);
   --glass-shadow: 0 1px 2px rgb(10 10 11 / 0.04), 0 12px 40px -12px rgb(10 10 11 / 0.16);
-  --glass-sheen: rgb(255 255 255 / 0.5);
 
   --gutter: 1.5rem;
 }
@@ -210,8 +209,8 @@
 
      Three ingredients, and it needs all three. A saturating backdrop blur, a
      gradient *edge* painted by a masked pseudo-element (border-image cannot
-     follow a border-radius), and a specular sheen the components add on hover.
-     Any two of the three read as "translucent div".
+     follow a border-radius). A pointer-tracked highlight used to be the third
+     ingredient; it read as a grey shape chasing the cursor and is gone.
 
      It is also only ever placed over something with structure — large type, the
      point field, a project's colour field. Blur over an empty background has
@@ -329,10 +328,6 @@
     animation: metal-turn 15s linear infinite;
   }
 
-  .metal:hover {
-    animation-duration: 5s;
-  }
-
   .metal:active {
     transform: translateY(1px) scale(0.985);
     box-shadow:
@@ -363,28 +358,6 @@
       inset 0 -1px 0 rgb(255 255 255 / 0.05);
   }
 
-  /* The band that travels across the plate on hover. */
-  .metal__core::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      104deg,
-      transparent 34%,
-      rgb(255 255 255 / 0.17) 48%,
-      rgb(255 255 255 / 0.04) 56%,
-      transparent 66%
-    );
-    transform: translateX(-130%);
-    transition: transform 0.9s var(--ease-settle);
-  }
-
-  .metal:hover .metal__core::after {
-    transform: translateX(130%);
-  }
-
   @keyframes metal-turn {
     to {
       --spin: 360deg;
@@ -396,9 +369,6 @@
       animation: none;
     }
 
-    .metal__core::after {
-      transition: none;
-    }
   }
 
   /* -------------------------------------------------------------------------
@@ -429,69 +399,33 @@
     transform: translateY(1px) scale(0.985);
   }
 
-  .pane::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-      104deg,
-      transparent 36%,
-      color-mix(in srgb, var(--stage-fg) 9%, transparent) 50%,
-      transparent 64%
-    );
-    transform: translateX(-130%);
-    transition: transform 0.9s var(--ease-settle);
-  }
-
-  .pane:hover::after {
-    transform: translateX(130%);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .pane::after {
-      transition: none;
-    }
-  }
-
   /* -------------------------------------------------------------------------
      Typed text. Every word is present from the start and only opacity moves,
      so the paragraph never reflows while it is being written.
   ------------------------------------------------------------------------- */
+  /* Each word carries its own transition-delay, computed once at render, and
+     the whole cascade is started by a single class on the container. From then
+     on it is pure CSS: no timer, no per-frame work, and no chance of the
+     rhythm stuttering because a frame ran late — which is exactly what made
+     the earlier per-word timer feel ragged. */
   .js .typed .type-word {
     opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 0.75s var(--ease-settle),
+      transform 0.75s var(--ease-settle);
   }
 
-  .js .typed .type-word.is-typed {
+  .js .typed.is-writing .type-word {
     opacity: 1;
-  }
-
-  /* A hairline, not a blinking block. It marks where the writing is and then
-     leaves — a caret that stays behind after the text is finished is a widget,
-     not a sentence. */
-  .js .typed .type-word.is-caret::after {
-    content: "";
-    display: inline-block;
-    width: 1px;
-    height: 1.05em;
-    margin-left: 1px;
-    vertical-align: -0.2em;
-    background: currentColor;
-    transition: opacity 0.4s var(--ease-hover);
-  }
-
-  .js .typed.is-done .type-word::after {
-    opacity: 0;
+    transform: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .js .typed .type-word {
       opacity: 1;
-    }
-
-    .js .typed .type-word.is-caret::after {
-      content: none;
+      transform: none;
+      transition: none;
     }
   }
 
@@ -538,34 +472,93 @@
     }
   }
 
-  /* The five-card row is 1138px wide at full size. Rather than recompute every
-     seat for narrower screens, the whole row is scaled as one object, which
-     keeps the overlaps and the proportions exactly as they were drawn. */
+  /* -------------------------------------------------------------------------
+     The contact cards.
+
+     Thick frosted glass, bright, on a black screen — a heavier material than
+     the glass everywhere else on the page, because here the cards *are* the
+     screen rather than a bar floating over it. The saturation is up rather
+     than down: what is behind them is the coloured light each card throws when
+     it is chosen, and letting that bleed through is the whole point of making
+     them translucent at all.
+  ------------------------------------------------------------------------- */
+  .card-glass {
+    position: relative;
+    isolation: isolate;
+    /* The fill is deliberately well under half.
+       Two of these overlap along the row, and a fill near 0.8 composited over
+       another near 0.8 lands at 0.96 — the overlaps came out brighter than
+       either card and read as vertical stripes rather than as depth. Kept light,
+       the cards get their brightness from the ambient pool behind the row
+       instead, which is a thing glass can plausibly be lit by. */
+    background: linear-gradient(
+      165deg,
+      rgb(255 255 255 / 0.86) 0%,
+      rgb(247 247 250 / 0.76) 46%,
+      rgb(230 230 238 / 0.7) 100%
+    );
+    -webkit-backdrop-filter: blur(30px) saturate(130%);
+    backdrop-filter: blur(30px) saturate(130%);
+    /* The wide, soft, *horizontal* shadow matters as much as the drop.
+       Neighbours in this row overlap by a couple of dozen pixels, and without
+       a shadow falling sideways each seam came out brighter than either card —
+       two translucent fills stacking. With it, the seam reads as one pane in
+       front of another, which is what it is. */
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      inset 0 -1px 0 rgb(255 255 255 / 0.35),
+      0 0 44px -8px rgb(0 0 0 / 0.55),
+      0 34px 74px -30px rgb(0 0 0 / 0.75);
+  }
+
+  /* The lit edge, painted by a masked pseudo-element because `border-image`
+     cannot follow a radius. */
+  .card-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      rgb(255 255 255 / 0.95),
+      rgb(255 255 255 / 0.25) 42%,
+      rgb(255 255 255 / 0.08) 62%,
+      rgb(255 255 255 / 0.7)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* The tile the service mark sits in: the same material again, one layer up. */
+  .card-tile {
+    background: linear-gradient(
+      160deg,
+      rgb(255 255 255 / 0.72),
+      rgb(255 255 255 / 0.34)
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
+      inset 0 -1px 2px rgb(0 0 0 / 0.06),
+      0 6px 16px -8px rgb(0 0 0 / 0.35);
+  }
+
+  /* The row is wider than most screens, so it is scaled as one object rather
+     than every seat being recomputed — that keeps the overlaps and the
+     proportions exactly as they were drawn. The factor is measured in JS
+     because CSS cannot divide a length by a length, which is what a
+     fit-to-width ratio is. */
   .contact-fan {
-    width: 1138px;
-    transform: scale(1);
+    transform: scale(var(--fan-scale, 1));
     transform-origin: top center;
-  }
-
-  @media (max-width: 1400px) {
-    .contact-fan {
-      transform: scale(0.92);
-      margin-bottom: -35px;
-    }
-  }
-
-  @media (max-width: 1240px) {
-    .contact-fan {
-      transform: scale(0.82);
-      margin-bottom: -79px;
-    }
-  }
-
-  @media (max-width: 1100px) {
-    .contact-fan {
-      transform: scale(0.72);
-      margin-bottom: -123px;
-    }
   }
 
   /* A hairline that reads on every stage colour. */

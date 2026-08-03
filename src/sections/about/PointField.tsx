@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { clamp01, damp, smoothstep } from "../../lib/anim";
 import { useReducedMotion } from "../../lib/useReducedMotion";
 
@@ -50,7 +50,21 @@ type Point = {
  * one. Everything runs in a single rAF loop that reads scroll and pointer
  * itself, so nothing about this component ever re-renders React.
  */
-export function PointField({ className = "" }: { className?: string }) {
+export function PointField({
+  className = "",
+  anchorRef,
+}: {
+  className?: string;
+  /**
+   * The element whose travel drives the resolve — the section, not the canvas.
+   *
+   * Reading the canvas's own box works only while the canvas moves with the
+   * page. The moment its column is pinned, or simply sits in a different part
+   * of the grid, its box stops tracking the scroll and the field drifts out of
+   * step with the paragraphs it is supposed to be answering.
+   */
+  anchorRef?: RefObject<HTMLElement | null>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const still = useReducedMotion();
 
@@ -150,7 +164,8 @@ export function PointField({ className = "" }: { className?: string }) {
       // the reader controls it: the grid arrives exactly as they finish the
       // paragraphs next to it.
       const viewport = window.innerHeight;
-      const settled = clamp01((viewport * 0.88 - box.top) / (viewport * 0.68));
+      const anchor = anchorRef?.current?.getBoundingClientRect() ?? box;
+      const settled = clamp01((viewport * 0.9 - anchor.top) / (viewport * 0.72));
 
       ctx.clearRect(0, 0, width, height);
 
