@@ -44,7 +44,7 @@ export const PROJECTS: readonly Project[] = [
     stage: "#12315e",
     shot: SHOTS["stipula-legal"],
   },
-  { slug: "nimbus-crm", repo: "bringto-dot/nimbus-crm-dashboard", stage: "#f5c518", shot: SHOTS["nimbus-crm"] },
+  { slug: "nimbus-crm", repo: "bringto-dot/nimbus-crm-dashboard", stage: "#e9c86a", shot: SHOTS["nimbus-crm"] },
   {
     slug: "productivity-bot",
     repo: "bringto-dot/productivity-tracker-bot",
@@ -64,5 +64,8 @@ export const shotSrcSet = (project: Project, format: "avif" | "webp") =>
 /** The `<img src>` fallback: the smallest width, so it is never the big one. */
 export const shotFallback = (project: Project) =>
   asset(`projects/${project.slug}-${project.shot.widths[0]}.webp`);
+
+/** The 40px copy that becomes the blurred field behind the card's reverse. */
+export const shotBlur = (project: Project) => asset(`projects/${project.slug}-blur.webp`);
 
 export const repoUrl = (project: Project) => `https://github.com/${project.repo}`;

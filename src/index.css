@@ -30,7 +30,13 @@
   --color-signal-red: #e0454b;
   --color-signal-blue: #4d7dff;
 
+  /* Three voices, and each one has a job.
+     Manrope is the engineered voice: structure, labels, the built half of the
+     argument. Playfair Display is the human voice — a high-contrast didone with
+     a real italic — and it appears exactly once per heading, on the word that
+     carries the idea. Inter is the interface, and never gets a display size. */
   --font-display: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display Variable", "Times New Roman", Georgia, serif;
   --font-body: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* One long soft settle for entrances, one symmetric curve for panels that
@@ -68,6 +74,17 @@
   syntax: "<number>";
   inherits: false;
   initial-value: 0;
+}
+
+/**
+ * The angle of the metal ring around a primary button. Registered so the
+ * browser can interpolate it — an unregistered custom property is a string, and
+ * a string does not animate, it snaps.
+ */
+@property --spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
 :root {
@@ -273,6 +290,172 @@
   }
 
   /* -------------------------------------------------------------------------
+     The primary button: a machined ring around a dark core.
+
+     Metal rather than a flat fill, and the same metal on every one of the six
+     stage colours. A pill that inverts the background disappears the moment
+     the background becomes mid-toned; a chrome edge carries its own contrast,
+     which is exactly what metal is for.
+
+     The ring is one conic gradient turning very slowly. The core is a bevelled
+     plate, and a specular band crosses it on hover — the light moving over the
+     surface rather than a colour change announcing that something is
+     hoverable.
+  ------------------------------------------------------------------------- */
+  .metal {
+    --spin: 0deg;
+    position: relative;
+    display: inline-flex;
+    padding: 1.5px;
+    border-radius: 999px;
+    background: conic-gradient(
+      from var(--spin),
+      #5a5a60,
+      #f4f4f6 12%,
+      #8a8a91 26%,
+      #ffffff 40%,
+      #3d3d42 55%,
+      #d8d8de 72%,
+      #6e6e75 88%,
+      #5a5a60
+    );
+    box-shadow:
+      0 1px 2px rgb(5 5 6 / 0.22),
+      0 8px 20px -10px rgb(5 5 6 / 0.4),
+      0 22px 44px -22px rgb(5 5 6 / 0.35);
+    transition:
+      transform 0.18s var(--ease-hover),
+      box-shadow 0.3s var(--ease-hover);
+    animation: metal-turn 15s linear infinite;
+  }
+
+  .metal:hover {
+    animation-duration: 5s;
+  }
+
+  .metal:active {
+    transform: translateY(1px) scale(0.985);
+    box-shadow:
+      0 1px 1px rgb(5 5 6 / 0.3),
+      0 3px 8px -4px rgb(5 5 6 / 0.4);
+  }
+
+  .metal__core {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    background: linear-gradient(180deg, #212124 0%, #08080a 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.16),
+      inset 0 -1px 0 rgb(0 0 0 / 0.7);
+    color: #e8e8ec;
+    text-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
+  }
+
+  .metal:active .metal__core {
+    box-shadow:
+      inset 0 2px 5px rgb(0 0 0 / 0.55),
+      inset 0 -1px 0 rgb(255 255 255 / 0.05);
+  }
+
+  /* The band that travels across the plate on hover. */
+  .metal__core::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      104deg,
+      transparent 34%,
+      rgb(255 255 255 / 0.17) 48%,
+      rgb(255 255 255 / 0.04) 56%,
+      transparent 66%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.9s var(--ease-settle);
+  }
+
+  .metal:hover .metal__core::after {
+    transform: translateX(130%);
+  }
+
+  @keyframes metal-turn {
+    to {
+      --spin: 360deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .metal {
+      animation: none;
+    }
+
+    .metal__core::after {
+      transition: none;
+    }
+  }
+
+  /* -------------------------------------------------------------------------
+     The secondary button: the same object in glass rather than metal. It takes
+     its colour from the stage, so it reads on all six.
+  ------------------------------------------------------------------------- */
+  .pane {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    border: 1px solid var(--stage-line);
+    background: color-mix(in srgb, var(--stage-fg) 4%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(115%);
+    backdrop-filter: blur(20px) saturate(115%);
+    color: var(--stage-fg);
+    transition:
+      border-color 0.3s var(--ease-hover),
+      background-color 0.3s var(--ease-hover),
+      transform 0.18s var(--ease-hover);
+  }
+
+  .pane:hover {
+    border-color: var(--stage-fg-3);
+    background: color-mix(in srgb, var(--stage-fg) 8%, transparent);
+  }
+
+  .pane:active {
+    transform: translateY(1px) scale(0.985);
+  }
+
+  .pane::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      104deg,
+      transparent 36%,
+      color-mix(in srgb, var(--stage-fg) 9%, transparent) 50%,
+      transparent 64%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.9s var(--ease-settle);
+  }
+
+  .pane:hover::after {
+    transform: translateX(130%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pane::after {
+      transition: none;
+    }
+  }
+
+  /* -------------------------------------------------------------------------
      Typed text. Every word is present from the start and only opacity moves,
      so the paragraph never reflows while it is being written.
   ------------------------------------------------------------------------- */
@@ -352,6 +535,36 @@
   @media (prefers-reduced-motion: reduce) {
     .faq-draw {
       transition-duration: 0.01ms;
+    }
+  }
+
+  /* The five-card row is 1138px wide at full size. Rather than recompute every
+     seat for narrower screens, the whole row is scaled as one object, which
+     keeps the overlaps and the proportions exactly as they were drawn. */
+  .contact-fan {
+    width: 1138px;
+    transform: scale(1);
+    transform-origin: top center;
+  }
+
+  @media (max-width: 1400px) {
+    .contact-fan {
+      transform: scale(0.92);
+      margin-bottom: -35px;
+    }
+  }
+
+  @media (max-width: 1240px) {
+    .contact-fan {
+      transform: scale(0.82);
+      margin-bottom: -79px;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .contact-fan {
+      transform: scale(0.72);
+      margin-bottom: -123px;
     }
   }
 

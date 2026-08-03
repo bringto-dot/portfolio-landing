@@ -40,6 +40,32 @@ No component library, no page builder, no UI kit. React, TypeScript and CSS.
   ink, on deep red, on navy, on yellow and on light blue. Two fixed greys tuned
   for a near-black page put tertiary text at about 1.6:1 on the red one.
 
+- **Three typefaces, and the third one is the argument.** Manrope is the
+  engineered voice and carries the structure; Inter is the interface and never
+  gets a display size; Playfair Display appears exactly once per heading, in
+  italic, on the word holding the human half of the sentence — «идеи»,
+  «помочь», «ваш». The site turns on *an idea, then the quality of the build*,
+  so the type says it too. The marker lives in the dictionary string, which
+  means a translator moves the emphasis by moving the asterisks.
+
+- **Buttons machined out of CSS.** The primary button is a turning chrome ring
+  around a bevelled dark plate with a specular band that crosses it on hover,
+  and it looks identical on all six stage colours — an edge made of metal
+  carries its own contrast, where a pill that merely inverts the background
+  disappears the moment the background is mid-toned, which two of the six are.
+  The obvious alternative is a WebGL shader per button; that is one live
+  graphics context each, and browsers keep about sixteen before they start
+  silently killing the oldest.
+
+- **A card reverse that is opaque on purpose.** `backface-visibility` stops
+  being reliable as soon as anything in the subtree makes a stacking context,
+  and when it gives out the front shows through the back mirror-imaged — the
+  project render sitting behind its own description. The reverse is a solid
+  plate, and the field behind its text is that project's own render at 40px
+  wide, blown up. A one-kilobyte file, where `filter: blur(60px)` would cost a
+  large offscreen buffer every frame *and* flatten the 3D context the card
+  turns on.
+
 - **8.66 MB of project renders down to 0.60 MB.** A build script crops the
   caption baked into each source render — it duplicates the title the page
   already shows and, being pixels, cannot follow the language switch — normalises
@@ -67,18 +93,21 @@ No component library, no page builder, no UI kit. React, TypeScript and CSS.
   visible before you commit to it. The seam opening is a better description of
   what is happening than an icon standing next to it.
 
-- **A card fan solved from the text outwards.** Five contact cards overlap in a
-  fan, and the overlap is load-bearing: a card's backdrop blur has the card
-  behind it to work on, which is the only honest way to do glass on a white
-  page. A card's name sits in a top corner, so left-aligning all five hid the
-  names of the two on the right behind the middle one. The pair on the right is
-  mirrored — symmetric composition, symmetric contents.
+- **An invitation that turns into a contact.** The closing card is not replaced
+  by five cards, it *is* the middle one: it flips on its own axis into Telegram
+  and the other four leave from underneath it, two each way. All five are the
+  same card scaled about its own centre, which is why the row keeps one set of
+  proportions instead of five. Everything on them is centred — in a row that
+  overlaps, whatever sits against a card's left or right edge is the first thing
+  to disappear, and a name at the midpoint is the one part nothing covers. Each
+  carries its service's colour as a full stop, and lights that colour behind
+  itself when it is the one being looked at.
 
 - **Real i18n, not a plugin.** One typed dictionary per language, so a missing
   string is a compile error rather than a blank spot in whichever language nobody
   thinks to check. The choice is detected on first visit, kept in
-  `localStorage`, and drives `<title>`, `lang` and the meta description. Both
-  font families ship one `@font-face` per unicode range, so an English reader
+  `localStorage`, and drives `<title>`, `lang` and the meta description. All
+  three font families ship one `@font-face` per unicode range, so an English reader
   never downloads the Cyrillic subset.
 
 ## Screens
@@ -108,11 +137,11 @@ disappears on two of the six project colours.
 
 React 19 + TypeScript, Vite 6, Tailwind CSS v4 (`@tailwindcss/vite`, tokens in
 `@theme`), `motion` for animation, `sharp` for the image pipeline. Self-hosted
-Manrope and Inter — a display face and an interface face, rather than one
-grotesk asked to do both jobs.
+Manrope, Inter and Playfair Display, each with a job of its own rather than one
+grotesk asked to do all three.
 
 The whole page — every project render, both font families, all the JavaScript —
-transfers about 300 KB over fifteen requests. Gzipped, that is 60 KB of React,
+transfers about 325 KB over twenty-two requests. Gzipped, that is 60 KB of React,
 46 KB of `motion`, 20 KB of application code and 8 KB of CSS, in separate chunks
 so a copy edit does not invalidate the cached vendor code.
 

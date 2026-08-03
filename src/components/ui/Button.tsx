@@ -3,27 +3,25 @@ import type { ComponentProps, ReactNode } from "react";
 type Variant = "solid" | "ghost";
 type Size = "md" | "sm";
 
-const BASE =
-  "group relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[background-color,border-color,color,transform,opacity] duration-300 ease-[var(--ease-hover)] active:scale-[0.98]";
-
-const SIZES: Record<Size, string> = {
-  md: "h-12 px-6 text-[0.95rem]",
-  sm: "h-10 px-5 text-[0.875rem]",
-};
-
 /**
- * Solid inverts the current stage colour; ghost sits on a hairline of it.
+ * Two materials, one shape.
  *
- * Neither names a colour. The page runs over white, near-black, deep red,
- * navy, yellow and light blue, and a button that hard-codes `bg-black` is
- * invisible on one of them — so both variants are written in terms of the
- * stage the controller is currently painting.
+ * `solid` is machined metal: a turning chrome ring around a bevelled dark
+ * plate, with a specular band that crosses it on hover. It looks the same on
+ * every one of the six stage colours, because an edge made of metal carries its
+ * own contrast — a pill that simply inverts the background vanishes the moment
+ * the background is mid-toned, which two of the six are.
+ *
+ * `ghost` is the same object in glass: it takes its hairline and its label from
+ * the stage, blurs what is behind it, and gets the same band of light.
+ *
+ * Both are CSS. The alternative — one WebGL surface per button — is a live
+ * graphics context each, and browsers keep about sixteen of those before they
+ * start silently killing the oldest.
  */
-const VARIANTS: Record<Variant, string> = {
-  solid:
-    "bg-[var(--stage-fg)] text-[var(--stage)] hover:opacity-[0.86] shadow-[0_1px_2px_rgb(5_5_6/0.08),0_10px_28px_-12px_rgb(5_5_6/0.35)]",
-  ghost:
-    "border border-[var(--stage-line)] text-[var(--stage-fg)] hover:border-[var(--stage-fg-3)] hover:bg-[color-mix(in_srgb,var(--stage-fg)_6%,transparent)]",
+const SIZES: Record<Size, { outer: string; core: string }> = {
+  md: { outer: "", core: "h-[46px] px-6 text-[0.95rem]" },
+  sm: { outer: "", core: "h-[38px] px-5 text-[0.875rem]" },
 };
 
 type Common = {
@@ -51,15 +49,20 @@ export function Button(props: AsLink | AsButton) {
     ...rest
   } = props;
 
-  const classes = `${BASE} ${SIZES[size]} ${VARIANTS[variant]} ${className}`;
+  const metal = variant === "solid";
+  const dimensions = SIZES[size];
 
-  const content = (
+  const shell = `group relative inline-flex max-w-full shrink-0 select-none items-center justify-center align-middle font-medium ${
+    metal ? "metal" : `pane ${dimensions.core}`
+  } ${metal ? dimensions.outer : ""} ${className}`;
+
+  const label = (
     <>
-      {children}
+      <span className="truncate">{children}</span>
       {arrow && (
         <span
           aria-hidden
-          className="transition-transform duration-300 ease-[var(--ease-hover)] group-hover:translate-x-[3px]"
+          className="shrink-0 transition-transform duration-300 ease-[var(--ease-hover)] group-hover:translate-x-[3px]"
         >
           →
         </span>
@@ -67,17 +70,29 @@ export function Button(props: AsLink | AsButton) {
     </>
   );
 
+  const content = metal ? (
+    <span className={`metal__core ${dimensions.core}`}>
+      <span className="relative z-[1] inline-flex items-center gap-2 whitespace-nowrap">
+        {label}
+      </span>
+    </span>
+  ) : (
+    <span className="relative z-[1] inline-flex items-center gap-2 whitespace-nowrap">
+      {label}
+    </span>
+  );
+
   if ("href" in rest && rest.href !== undefined) {
     const { href, ...anchor } = rest as AsLink;
     return (
-      <a href={href} className={classes} {...anchor}>
+      <a href={href} className={shell} {...anchor}>
         {content}
       </a>
     );
   }
 
   return (
-    <button type="button" className={classes} {...(rest as AsButton)}>
+    <button type="button" className={shell} {...(rest as AsButton)}>
       {content}
     </button>
   );

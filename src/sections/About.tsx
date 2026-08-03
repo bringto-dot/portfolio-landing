@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Reveal } from "../components/layout/Reveal";
 import { Container, Section } from "../components/layout/Section";
+import { Accented } from "../components/ui/Accented";
 import { useI18n } from "../i18n";
 import { useStageSection } from "../stage/useStageSection";
 import { PointField } from "./about/PointField";
@@ -31,7 +32,7 @@ export function About() {
                 id="about-title"
                 className="font-display max-w-[14ch] text-[clamp(2rem,4.4vw,3.4rem)] font-extrabold"
               >
-                {t.about.title}
+                <Accented text={t.about.title} />
               </h2>
             </Reveal>
 

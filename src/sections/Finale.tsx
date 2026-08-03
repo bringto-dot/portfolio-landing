@@ -1,11 +1,13 @@
 import { motion } from "motion/react";
 import { useRef } from "react";
 import { Container, Section } from "../components/layout/Section";
+import { Accented } from "../components/ui/Accented";
 import { DISPLAY_LINE, Rise } from "../components/ui/Rise";
 import { useI18n } from "../i18n";
 import { EASE } from "../lib/anim";
 import { useReducedMotion } from "../lib/useReducedMotion";
 import { useStageSection } from "../stage/useStageSection";
+import { FilingField } from "./finale/FilingField";
 
 const SEEN = { once: true, amount: 0.4 } as const;
 
@@ -30,7 +32,7 @@ export function Finale() {
           <h2 className={DISPLAY_LINE}>
             <span className="block max-w-[23ch]">
               <Rise still={still} whenSeen duration={1}>
-                {t.finale.line}
+                <Accented text={t.finale.line} />
               </Rise>
 
               <motion.span
@@ -53,6 +55,16 @@ export function Finale() {
           >
             {t.finale.sub}
           </motion.p>
+
+          <motion.div
+            className="mt-14 max-w-[46rem]"
+            initial={still ? undefined : { opacity: 0 }}
+            whileInView={still ? undefined : { opacity: 1 }}
+            viewport={SEEN}
+            transition={{ duration: 1.2, delay: 1, ease: EASE.settle }}
+          >
+            <FilingField className="block h-[92px] w-full" />
+          </motion.div>
         </div>
       </Container>
 

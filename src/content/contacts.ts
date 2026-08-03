@@ -25,5 +25,5 @@ export const CONTACTS: readonly Contact[] = [
     copyable: true,
   },
   { key: "github", href: "https://github.com/bringto-dot", handle: "bringto-dot" },
-  { key: "kwork", href: "https://kwork.ru/user/timetofix90", handle: "timetofix90" },
+  { key: "kwork", href: "https://kwork.ru/user/bring-to", handle: "bring-to" },
 ];

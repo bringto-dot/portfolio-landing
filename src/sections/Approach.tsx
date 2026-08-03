@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useCallback, useRef } from "react";
 import { Container, Section } from "../components/layout/Section";
+import { Accented, plain } from "../components/ui/Accented";
 import { useI18n } from "../i18n";
 import { clamp01, smoothstep } from "../lib/anim";
 import { mixRgb, parseHex, toHex } from "../lib/color";
@@ -59,7 +60,7 @@ function Block({
   return (
     <>
       <h3 className="font-display text-[clamp(1.5rem,3.2vw,2.5rem)] font-extrabold">
-        {title}
+        <Accented text={title} />
       </h3>
       <ul className="mt-8 space-y-4 md:mt-10 md:space-y-5">
         {items.map((item) => (
@@ -129,13 +130,6 @@ export function Approach() {
   const positiveY = useTransform(scrollYProgress, [0.42, 0.8], [90, 0]);
   const positiveMark = useTransform(scrollYProgress, [0.5, 0.72], [0, 1]);
 
-  // One hairline crossing the screen from left to right over the whole
-  // section. It is the shift of attention the section is built on, made into a
-  // thing you can see — and it gives the empty three quarters of the screen a
-  // reason to be empty.
-  const dividerX = useTransform(scrollYProgress, [0, 1], ["14%", "84%"]);
-  const dividerOpacity = useTransform(scrollYProgress, [0, 0.12, 0.88, 1], [0, 1, 1, 0]);
-
   const staticMark = useTransform(scrollYProgress, [0, 1], [1, 1]);
 
   if (still || !wide) {
@@ -143,7 +137,7 @@ export function Approach() {
       <Section ref={ref} labelledBy="approach-title" className="py-28 md:py-36">
         <Container>
           <h2 id="approach-title" className="sr-only">
-            {t.approach.title}
+            {plain(t.approach.title)}
           </h2>
           <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
             <div>
@@ -169,22 +163,15 @@ export function Approach() {
   }
 
   return (
-    <Section ref={ref} labelledBy="approach-title" className="h-[300svh]">
+    // 200svh rather than 300: the section holds one screen still while the
+    // reader scrolls two, which is long enough for the turn to feel like a
+    // journey and short enough that it does not feel like being detained.
+    <Section ref={ref} labelledBy="approach-title" className="h-[200svh]">
       <h2 id="approach-title" className="sr-only">
-        {t.approach.title}
+        {plain(t.approach.title)}
       </h2>
 
       <div className="sticky top-0 h-[100svh] overflow-hidden">
-        <motion.span
-          aria-hidden
-          className="absolute inset-y-[14vh] hidden w-px lg:block"
-          style={{
-            left: dividerX,
-            opacity: dividerOpacity,
-            background: "var(--stage-line)",
-          }}
-        />
-
         <Container className="relative flex h-full flex-col justify-center">
           <motion.div
             className="max-w-[30ch] pt-[6vh] md:max-w-[34ch] lg:absolute lg:top-[21vh] lg:left-[var(--gutter)] lg:pt-0"

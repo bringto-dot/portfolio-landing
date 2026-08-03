@@ -5,6 +5,7 @@ import { GlassPanel } from "../../components/ui/GlassPanel";
 import {
   repoUrl,
   shotFallback,
+  shotBlur,
   shotSrcSet,
   type Project,
 } from "../../content/projects";
@@ -166,47 +167,91 @@ export function ProjectCard({
               transform: "rotateY(180deg)",
             }}
           >
-            <GlassPanel
-              flat
-              radius="1.5rem"
-              className="flex h-full w-full flex-col p-7 md:p-10 lg:p-12"
-            >
-              <div className="relative z-[3] flex items-start justify-between gap-6">
-                <p className="tnum font-display text-[0.95rem] font-bold text-[var(--stage-fg-2)]">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <button
-                  type="button"
-                  onClick={onFlip}
-                  tabIndex={active && flipped ? 0 : -1}
-                  className="text-[0.82rem] text-[var(--stage-fg-2)] transition-opacity duration-300 hover:opacity-60"
-                >
-                  {labels.back}
-                </button>
-              </div>
+            <div className="relative h-full w-full overflow-hidden rounded-[1.5rem]">
+              {/* Fully opaque, deliberately.
+                  `backface-visibility` is not reliable once anything in the
+                  subtree creates a stacking context, and when it gives out the
+                  front face shows through the back mirror-imaged — the project
+                  render sitting behind its own description, unreadable. An
+                  opaque plate is correct regardless of what the compositor
+                  decides to do.
 
-              {/* No title on this side. It is already set in display type
-                  directly under the card and does not change when the card
-                  turns — repeating it here would be the same words twice on
-                  one screen. The back is for what the front cannot say. */}
-              <div className="relative z-[3] flex flex-1 flex-col justify-center">
-                <p className="max-w-[46ch] text-[clamp(1rem,1.55vw,1.42rem)] leading-[1.55] tracking-[-0.01em]">
-                  {copy.description}
-                </p>
+                  The field behind the text is the project's own render at 40px
+                  wide, blown up: the card keeps the colours of the work it
+                  belongs to without anyone having to read anything through
+                  them. */}
+              <div className="absolute inset-0" style={{ background: project.stage }} />
+              <img
+                src={shotBlur(project)}
+                alt=""
+                aria-hidden
+                width={40}
+                height={25}
+                className="absolute inset-0 h-full w-full scale-[1.25] object-cover opacity-55"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(150deg, ${project.stage}cc, ${project.stage}f2 62%, ${project.stage})`,
+                }}
+              />
 
-                <div className="mt-8 md:mt-10">
-                  <Button
-                    href={repoUrl(project)}
-                    target="_blank"
-                    rel="noreferrer"
-                    arrow
+              {/* Clicking anywhere on the reverse turns it back. It sits under
+                  the content so the GitHub link keeps its own target.
+
+                  A plain div rather than a button: keyboard users already have
+                  the labelled "back" control below, and a focusable button with
+                  no accessible name is worse than no button at all. */}
+              {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+              <div
+                aria-hidden
+                onClick={onFlip}
+                className="absolute inset-0 z-[1] cursor-pointer"
+              />
+
+              <GlassPanel
+                flat
+                radius="1.5rem"
+                className="pointer-events-none relative z-[2] flex h-full w-full flex-col bg-transparent p-7 shadow-none md:p-10 lg:p-12"
+              >
+                <div className="relative z-[3] flex items-start justify-between gap-6">
+                  <p className="tnum font-display text-[0.95rem] font-bold text-[var(--stage-fg-2)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onFlip}
                     tabIndex={active && flipped ? 0 : -1}
+                    className="pointer-events-auto text-[0.82rem] text-[var(--stage-fg-2)] transition-opacity duration-300 hover:opacity-60"
                   >
-                    {labels.open}
-                  </Button>
+                    {labels.back}
+                  </button>
                 </div>
-              </div>
-            </GlassPanel>
+
+                {/* No title on this side. It is already set in display type
+                    directly under the card and does not change when the card
+                    turns — repeating it here would be the same words twice on
+                    one screen. The back is for what the front cannot say. */}
+                <div className="relative z-[3] flex flex-1 flex-col justify-center">
+                  <p className="max-w-[46ch] text-[clamp(1rem,1.55vw,1.42rem)] leading-[1.55] tracking-[-0.01em]">
+                    {copy.description}
+                  </p>
+
+                  <div className="mt-8 md:mt-10">
+                    <Button
+                      href={repoUrl(project)}
+                      target="_blank"
+                      rel="noreferrer"
+                      arrow
+                      className="pointer-events-auto"
+                      tabIndex={active && flipped ? 0 : -1}
+                    >
+                      {labels.open}
+                    </Button>
+                  </div>
+                </div>
+              </GlassPanel>
+            </div>
           </div>
         </motion.div>
       </motion.div>

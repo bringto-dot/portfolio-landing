@@ -5,6 +5,8 @@ import { createRoot } from "react-dom/client";
 // English version never downloads the Cyrillic subset and vice versa.
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/inter";
+import "@fontsource-variable/playfair-display";
+import "@fontsource-variable/playfair-display/wght-italic.css";
 
 import "./index.css";
 import { App } from "./App";

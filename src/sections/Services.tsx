@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Reveal } from "../components/layout/Reveal";
 import { Container, Section } from "../components/layout/Section";
+import { Accented } from "../components/ui/Accented";
 import { useI18n } from "../i18n";
 import { stagger } from "../lib/anim";
 import { useProximity } from "../lib/useProximity";
@@ -65,7 +66,7 @@ export function Services() {
               id="services-title"
               className="font-display max-w-[13ch] text-[clamp(2rem,4.6vw,3.6rem)] font-extrabold"
             >
-              {t.services.title}
+              <Accented text={t.services.title} />
             </h2>
           </Reveal>
           <Reveal delay={0.1}>

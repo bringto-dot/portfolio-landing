@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import type { ReactNode } from "react";
 import { EASE } from "../../lib/anim";
 
 /**
@@ -35,7 +36,7 @@ export function Rise({
   still,
   whenSeen = false,
 }: {
-  children: string;
+  children: ReactNode;
   /** Seconds. */
   delay?: number;
   duration?: number;

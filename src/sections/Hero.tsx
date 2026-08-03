@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useRef } from "react";
 import { Container, Section } from "../components/layout/Section";
 import { Button } from "../components/ui/Button";
+import { Accented } from "../components/ui/Accented";
 import { DISPLAY_LINE, Rise } from "../components/ui/Rise";
 import { useI18n } from "../i18n";
 import { EASE } from "../lib/anim";
@@ -47,7 +48,7 @@ export function Hero() {
             {words.map((word, index) => (
               <span key={`${word}-${index}`}>
                 <Rise delay={index * WORD_STEP} still={still}>
-                  {word}
+                  <Accented text={word} />
                 </Rise>
                 {index < words.length - 1 ? " " : null}
               </span>

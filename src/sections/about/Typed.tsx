@@ -1,19 +1,29 @@
 import { useEffect, useRef } from "react";
+import { Accented } from "../../components/ui/Accented";
 import { useReducedMotion } from "../../lib/useReducedMotion";
 
 /**
- * Pace, in milliseconds. A full sentence gets a breath after it and a clause
- * gets half of one, which is the difference between text being written and
- * text being metered out by a machine.
+ * Pace, in milliseconds. A full sentence gets a real breath after it and a
+ * clause gets half of one, which is the difference between text being written
+ * and text being metered out by a machine.
  */
-const STEP = 34;
-const CLAUSE = 130;
-const SENTENCE = 270;
+const STEP = 62;
+const CLAUSE = 210;
+const SENTENCE = 440;
 
+/**
+ * Nobody types on a metronome. A long word takes longer than a short one, and
+ * every interval is scattered by up to a third — an exactly even rhythm is the
+ * single thing that gives a typing effect away as an animation.
+ */
 const delayAfter = (word: string) => {
-  if (/[.!?]["»)]?$/.test(word)) return SENTENCE;
-  if (/[,;:—–]$/.test(word)) return CLAUSE;
-  return STEP;
+  const base = /[.!?]["»)]?$/.test(word)
+    ? SENTENCE
+    : /[,;:—–]$/.test(word)
+      ? CLAUSE
+      : STEP + word.trim().length * 5;
+
+  return base * (0.82 + Math.random() * 0.36);
 };
 
 /**
@@ -104,7 +114,7 @@ export function Typed({
         <p key={index} className={index > 0 ? "mt-6" : undefined}>
           {paragraph.split(" ").map((word, position) => (
             <span key={position} data-word className="type-word">
-              {word}{" "}
+              <Accented text={word} />{" "}
             </span>
           ))}
         </p>

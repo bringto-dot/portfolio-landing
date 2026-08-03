@@ -18,7 +18,7 @@ export const en: Dict = {
   },
 
   hero: {
-    lineOne: "Every good product starts with an idea.",
+    lineOne: "Every good product starts with an *idea*.",
     lineTwo: "It ends with the quality of the build.",
     invite: "Below — the evidence.",
     primary: "See the work",
@@ -26,11 +26,11 @@ export const en: Dict = {
   },
 
   about: {
-    title: "How I work",
+    title: "How I *work*",
     paragraphs: [
-      "I have been building modern web projects for over three years. In that time I have shipped work across the whole range of difficulty — from landing pages and Telegram bots to CRM systems and internal tools.",
-      "Writing the code is not the point. Building something people are genuinely comfortable using is. I pay attention to detail, I make a point of understanding what the business actually needs, and I suggest the things that make a project better.",
-      "Every new project is a chance to make something genuinely good, so I don't try to finish as fast as possible. What I'm after is a result both the client and I are happy to put our names to.",
+      "I have been building modern web projects for over three years. In that time I have shipped work across the whole range of *difficulty* — from landing pages and Telegram bots to CRM systems and internal tools.",
+      "Writing the code is not the point. Building something people are genuinely comfortable using is. I pay attention to *detail*, I make a point of understanding what the business actually needs, and I suggest the things that make a project better.",
+      "Every new project is a chance to make something genuinely *good*, so I don't try to finish as fast as possible. What I'm after is a result both the client and I are happy to put our names to.",
     ],
     figure: "An idea becoming a structure",
   },
@@ -84,7 +84,7 @@ export const en: Dict = {
   },
 
   services: {
-    title: "What I can help with",
+    title: "What I can *help* with",
     lead: "On the left, what I build constantly. On the right, what I take on when the job is bigger.",
     primaryTitle: "Most of my work",
     primary: [
@@ -118,7 +118,7 @@ export const en: Dict = {
 
   approach: {
     title: "Why people choose me",
-    negativeTitle: "Not how I work",
+    negativeTitle: "Not how I *work*",
     negative: [
       "Building only what the brief says, suggesting no improvements.",
       "Rushing at the cost of quality.",
@@ -126,7 +126,7 @@ export const en: Dict = {
       "Disappearing once the project is handed over.",
       "Reaching for a template without understanding the problem.",
     ],
-    positiveTitle: "How I work",
+    positiveTitle: "How I *work*",
     positive: [
       "Understand the problem first, write the code second.",
       "Think the product through as a whole, not page by page.",
@@ -137,7 +137,7 @@ export const en: Dict = {
   },
 
   faq: {
-    title: "Frequently asked questions",
+    title: "Frequently asked *questions*",
     items: [
       {
         question: "How long does development take?",
@@ -193,7 +193,7 @@ export const en: Dict = {
   },
 
   contact: {
-    title: "Is the next one yours?",
+    title: "Is the next one *yours*?",
     lead: "Tell me the idea — the build is on me.",
     cta: "Get in touch",
     collapse: "Collapse",
@@ -228,7 +228,7 @@ export const en: Dict = {
   },
 
   finale: {
-    line: "A good product starts with a good idea.",
+    line: "A good product starts with a good *idea*.",
     sub: "The rest is a question of how it's built.",
     copyright: "© 2026 bringto",
     signature: "Made with attention to every detail",

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useId, useRef, useState } from "react";
 import { Reveal } from "../components/layout/Reveal";
 import { Container, Section } from "../components/layout/Section";
+import { Accented } from "../components/ui/Accented";
 import { useI18n } from "../i18n";
 import { EASE } from "../lib/anim";
 import { useReducedMotion } from "../lib/useReducedMotion";
@@ -98,7 +99,7 @@ export function Faq() {
               id="faq-title"
               className="font-display max-w-[12ch] text-[clamp(2rem,4.2vw,3.2rem)] font-extrabold lg:sticky lg:top-32"
             >
-              {t.faq.title}
+              <Accented text={t.faq.title} />
             </h2>
           </Reveal>
 
