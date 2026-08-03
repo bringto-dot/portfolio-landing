@@ -19,28 +19,28 @@ const CARD_W = 380;
 const CARD_H = 540;
 
 /** Width of the whole row at scale 1, from the outermost card edges. */
-const FAN_W = 1568;
+const FAN_W = 1632;
 
 type Seat = { x: number; scale: number; z: number };
 
 /**
- * Five cards in a row, largest in the middle, set edge to edge.
+ * Five cards in a row, largest in the middle, with a hairline gap between.
  *
- * Edge to edge and not overlapping, which took two tries to get right: two
- * translucent fills composited on top of each other land near opaque, so every
- * seam came out brighter than either card and the row read as a set of white
- * stripes. Panes of glass standing side by side do the same job without that.
+ * Not overlapping, which took two tries: two translucent fills composited on
+ * top of each other land near opaque, so every seam came out brighter than
+ * either card. Nor quite touching — the picked card grows a few per cent, and
+ * with no gap it pushed into the edges of the cards beside it.
  *
  * Telegram is the main way to reach me, so it is the card at full size in the
  * centre — and it is not a sixth card that appears, it is the invitation card
  * turning over. The other four leave from underneath it, two each way.
  */
 const SEATS: Record<ContactKey, Seat> = {
-  github: { x: -647, scale: 0.72, z: 10 },
-  email: { x: -350, scale: 0.84, z: 20 },
+  github: { x: -679, scale: 0.72, z: 10 },
+  email: { x: -366, scale: 0.84, z: 20 },
   telegram: { x: 0, scale: 1, z: 40 },
-  discord: { x: 350, scale: 0.84, z: 20 },
-  kwork: { x: 647, scale: 0.72, z: 10 },
+  discord: { x: 366, scale: 0.84, z: 20 },
+  kwork: { x: 679, scale: 0.72, z: 10 },
 };
 
 /**
@@ -86,13 +86,14 @@ function Glow({ colour, on }: { colour: string; on: boolean }) {
   return (
     <motion.span
       aria-hidden
-      className="pointer-events-none absolute inset-x-[-24%] top-[70%] bottom-[-30%] -z-10"
+      className="pointer-events-none absolute inset-x-[-16%] top-[86%] -z-10 h-[48%]"
       style={{
-        // The bright centre has to sit *below* the card's lower edge. Centred
-        // on the card the card covers it, and all that escapes is the faint
-        // outer falloff — which is why the first version looked like nothing.
-        background: `radial-gradient(52% 58% at 50% 62%, ${colour}, transparent 74%)`,
-        filter: "blur(38px)",
+        // The bright core sits exactly on the card's lower edge and the pool
+        // spreads below it — light on a floor, not a lamp behind a picture.
+        // Wide and shallow rather than round: a round one centred on the card
+        // is simply covered by the card.
+        background: `radial-gradient(46% 44% at 50% 28%, ${colour}, transparent 72%)`,
+        filter: "blur(34px)",
       }}
       animate={{ opacity: on ? 1 : 0 }}
       transition={HOVER}
@@ -118,11 +119,11 @@ export function Contact() {
   /**
    * The two animations are on two elements on purpose.
    *
-   * The outer one runs the opening: cards travel out from the centre, staggered.
-   * The inner one answers the pointer, and it must not inherit that stagger —
-   * with both on one element, hovering a card waited out the opening delay
-   * before anything moved, so the row felt slow to the touch. Split, the
-   * choreography stays leisurely and the response is immediate.
+   * The outer one runs the opening: the cards travel out from the centre. The
+   * inner one answers the pointer, and it has to be a fifth of a second no
+   * matter what the opening is doing — with both on one element, hovering a
+   * card waited out the opening's timing before anything moved, and the row
+   * felt slow to the touch.
    */
   const response = (key: ContactKey) => {
     const lifted = hovered === key;
@@ -187,7 +188,7 @@ export function Contact() {
               transition={{ duration: 0.8, ease: EASE.settle }}
             />
 
-            {SATELLITES.map((contact, index) => (
+            {SATELLITES.map((contact) => (
               <motion.div
                 key={contact.key}
                 className="absolute top-0 left-1/2"
@@ -203,11 +204,10 @@ export function Contact() {
                     ? { opacity: 1, x: SEATS[contact.key].x, scale: SEATS[contact.key].scale }
                     : { opacity: 0, x: 0, scale: 0.86 }
                 }
-                transition={{
-                  duration: still ? 0 : 0.85,
-                  delay: still || !open ? 0 : 0.32 + stagger(index, 0.06, 0.2),
-                  ease: EASE.settle,
-                }}
+                // No delay and no stagger. The card was lifting, then turning,
+                // then finally letting the others out — three beats where the
+                // press asked for one. Everything leaves on the same frame.
+                transition={{ duration: still ? 0 : 0.72, ease: EASE.settle }}
                 inert={!open}
               >
                 <motion.div
@@ -251,11 +251,20 @@ export function Contact() {
                   className="relative h-full w-full"
                   style={{ transformStyle: "preserve-3d" }}
                   animate={{ rotateY: open ? 180 : 0 }}
-                  transition={{ duration: still ? 0 : 1, ease: EASE.panel }}
+                  transition={{ duration: still ? 0 : 0.72, ease: EASE.panel }}
                 >
-                  <div
+                  {/* Both faces also switch opacity at the halfway point.
+                      `backface-visibility` alone is not enough here: the glass
+                      makes a stacking context, the compositor flattens the 3D,
+                      and the invitation stayed legible through the back of the
+                      Telegram card in mirror writing. Hiding the face that has
+                      turned away is the fix that does not depend on the
+                      compositor doing anything in particular. */}
+                  <motion.div
                     className="absolute inset-0"
                     style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+                    animate={{ opacity: open ? 0 : 1 }}
+                    transition={{ duration: 0.01, delay: still ? 0 : 0.34 }}
                   >
                     <Invite
                       title={t.contact.title}
@@ -264,18 +273,20 @@ export function Contact() {
                       onOpen={() => setOpen(true)}
                       focusable={!open}
                     />
-                  </div>
+                  </motion.div>
 
-                  <div
+                  <motion.div
                     className="absolute inset-0"
                     style={{
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
+                    animate={{ opacity: open ? 1 : 0 }}
+                    transition={{ duration: 0.01, delay: still ? 0 : 0.34 }}
                   >
                     {card("telegram")}
-                  </div>
+                  </motion.div>
                 </motion.div>
               </motion.div>
             </motion.div>

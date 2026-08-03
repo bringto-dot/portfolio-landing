@@ -163,7 +163,12 @@ export function Projects() {
                 exit={still ? undefined : { opacity: 0, y: -8 }}
                 transition={{ duration: 0.4, ease: EASE.settle }}
               >
-                <h3 className="font-display truncate text-[clamp(1.4rem,3.2vw,2.5rem)] font-extrabold">
+                {/* `truncate` sets `overflow: hidden`, and headings on this
+                    site run at a line-height of 1.02 — which leaves a line box
+                    barely as tall as the em square, so the tail of a «g» or a
+                    «д» was being sliced off. The measure has to make room for
+                    the descenders before it is allowed to clip anything. */}
+                <h3 className="font-display truncate pb-[0.08em] text-[clamp(1.4rem,3.2vw,2.5rem)] leading-[1.22] font-extrabold">
                   {copy.title}
                 </h3>
                 <p className="mt-1 truncate text-[0.88rem] text-[var(--stage-fg-2)]">

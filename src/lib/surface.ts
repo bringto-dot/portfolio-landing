@@ -1,4 +1,4 @@
-import { mixRgb, parseHex, toCss, toneOf, type Rgb } from "./color";
+import { luminance, mixRgb, parseHex, toCss, toneOf, type Rgb } from "./color";
 
 export const INK = parseHex("#0a0a0b");
 export const CHALK = parseHex("#f5f5f6");
@@ -57,30 +57,32 @@ export function surfaceVars(colour: Rgb): Record<string, string> {
   };
 }
 
-/** How far the reverse of a card is pushed away from mid-grey. */
-const LIFT = 0.45;
+/** Multiplied into the page colour to sink the card a step below it. */
+const SINK = 0.78;
+
+/** Mixed towards chalk instead, when there is no room left to go darker. */
+const RAISE = 0.115;
 
 /**
- * The reverse of a project card takes its colour from that project's own
- * screenshot, not from the page — otherwise the card and the background behind
- * it are the same colour and the card stops being an object.
+ * The reverse of a project card: the page colour, one step darker.
  *
- * The average colour is pushed away from the middle first: a screenshot that
- * averages to mid-grey gives poor contrast whichever way the text goes, so a
- * darkish field is darkened and a lightish one lightened until it can hold
- * type. What comes back is the resulting field colour, the flat wash that
- * produces it, and the variables the text on top should use.
+ * A step down rather than a picture. The card only has to read as an object
+ * sitting on the page, and a flat plane a shade below the background does that
+ * without competing with the text on top of it — which is what an enlarged
+ * screenshot did.
+ *
+ * Multiplying the channels rather than mixing towards black keeps the hue, so
+ * the red project's card is still red and the navy one still navy. Below the
+ * near-black project there is nowhere darker to go, so that one goes up
+ * instead: the step is what matters, not the direction.
  */
-export function cardSurface(placeholder: string) {
-  const base = parseHex(placeholder);
-  const dark = toneOf(base) > 0.5;
-  const towards = dark ? INK : CHALK;
-  const field = mixRgb(base, towards, LIFT);
+export function cardSurface(stage: string) {
+  const base = parseHex(stage);
+  const floored = luminance(base) < 0.02;
 
-  return {
-    vars: surfaceVars(field),
-    /** Painted over the blurred screenshot to produce `field`. */
-    wash: rgba(towards, LIFT),
-    dark,
-  };
+  const field: Rgb = floored
+    ? mixRgb(base, CHALK, RAISE)
+    : [base[0] * SINK, base[1] * SINK, base[2] * SINK];
+
+  return { vars: surfaceVars(field), field: toCss(field), raised: floored };
 }

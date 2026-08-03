@@ -121,17 +121,6 @@ async function main() {
       await resized.clone().webp({ quality: 78, effort: 6 }).toFile(join(OUTPUT, `${slug}-${w}.webp`));
     }
 
-    // A 40px-wide copy, used full-bleed behind the card's reverse side.
-    // Blowing a 40px image up to 900 is a blur the browser performs while it
-    // scales, for about a kilobyte — where `filter: blur(60px)` on the full
-    // render costs a large offscreen buffer every frame *and* creates a
-    // stacking context that flattens the 3D transform the card flips on.
-    await cropped
-      .clone()
-      .resize({ width: 40 })
-      .webp({ quality: 72 })
-      .toFile(join(OUTPUT, `${slug}-blur.webp`));
-
     manifest[slug] = {
       widths,
       width: box.width,

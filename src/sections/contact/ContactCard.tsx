@@ -59,7 +59,7 @@ export function ContactCard({
           <Mark service={contact.key} className="h-[34px] w-[34px]" />
         </span>
 
-        <p className="font-display text-[1.45rem] leading-none font-extrabold tracking-[-0.035em] text-[var(--stage-fg)]">
+        <p className="font-display text-[1.45rem] leading-[1.15] font-extrabold tracking-[-0.035em] text-[var(--stage-fg)]">
           {copy.name}
         </p>
 

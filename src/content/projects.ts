@@ -65,7 +65,4 @@ export const shotSrcSet = (project: Project, format: "avif" | "webp") =>
 export const shotFallback = (project: Project) =>
   asset(`projects/${project.slug}-${project.shot.widths[0]}.webp`);
 
-/** The 40px copy that becomes the blurred field behind the card's reverse. */
-export const shotBlur = (project: Project) => asset(`projects/${project.slug}-blur.webp`);
-
 export const repoUrl = (project: Project) => `https://github.com/${project.repo}`;

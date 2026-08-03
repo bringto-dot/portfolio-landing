@@ -61,10 +61,13 @@ No component library, no page builder, no UI kit. React, TypeScript and CSS.
   being reliable as soon as anything in the subtree makes a stacking context,
   and when it gives out the front shows through the back mirror-imaged — the
   project render sitting behind its own description. The reverse is a solid
-  plate, and the field behind its text is that project's own render at 40px
-  wide, blown up. A one-kilobyte file, where `filter: blur(60px)` would cost a
-  large offscreen buffer every frame *and* flatten the 3D context the card
-  turns on.
+  plate holding that project's own stage colour, one step darker: the channels
+  are multiplied rather than mixed towards black, so the red project's reverse
+  is still red and the navy one still navy. Under the near-black project there
+  is nowhere darker to go, so that one steps up towards chalk instead — the step
+  is what matters, not its direction. A flat plane a shade below the page reads
+  as an object without competing with the type on top of it, which is exactly
+  what an enlarged screenshot behind the text did.
 
 - **8.66 MB of project renders down to 0.60 MB.** A build script crops the
   caption baked into each source render — it duplicates the title the page

@@ -5,7 +5,6 @@ import { GlassPanel } from "../../components/ui/GlassPanel";
 import {
   repoUrl,
   shotFallback,
-  shotBlur,
   shotSrcSet,
   type Project,
 } from "../../content/projects";
@@ -42,7 +41,7 @@ export function ProjectCard({
   priority: boolean;
 }) {
   const active = offset === 0;
-  const surface = cardSurface(project.shot.placeholder);
+  const surface = cardSurface(project.stage);
   const ref = useRef<HTMLDivElement>(null);
   const press = useRef({ x: 0, y: 0 });
 
@@ -182,30 +181,19 @@ export function ProjectCard({
                   once anything in the subtree creates a stacking context, and
                   when it gives out the front shows through mirror-imaged — the
                   render sitting behind its own description. */}
-              <img
-                src={shotBlur(project)}
-                alt=""
-                aria-hidden
-                width={40}
-                height={25}
-                className="absolute inset-0 h-full w-full scale-[1.3] object-cover"
-              />
-              {/* One flat wash, pushing the screenshot's average away from the
-                  middle until it can hold type. Not a tint in the page colour:
-                  that is what erased the palette. */}
-              <div className="absolute inset-0" style={{ background: surface.wash }} />
+              <div className="absolute inset-0" style={{ background: surface.field }} />
 
-              {/* Brushed metal: a broad diagonal highlight and a fine grain,
-                  in `overlay` so it works with whatever colour the field turned
-                  out to be instead of painting grey over it. */}
+              {/* Brushed metal, quietly: a broad diagonal highlight and a fine
+                  grain, in `overlay` so it works with whatever colour the field
+                  is rather than painting grey over it. */}
               <div
                 aria-hidden
                 className="absolute inset-0"
                 style={{
                   mixBlendMode: "overlay",
                   background: `
-                    linear-gradient(112deg, rgb(255 255 255 / 0.30) 0%, rgb(255 255 255 / 0.04) 22%, transparent 42%, transparent 58%, rgb(255 255 255 / 0.14) 76%, rgb(0 0 0 / 0.20) 100%),
-                    repeating-linear-gradient(112deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 5px)
+                    linear-gradient(112deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0.03) 24%, transparent 44%, transparent 58%, rgb(255 255 255 / 0.10) 78%, rgb(0 0 0 / 0.16) 100%),
+                    repeating-linear-gradient(112deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 6px)
                   `,
                 }}
               />
