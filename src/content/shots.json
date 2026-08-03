@@ -1,0 +1,56 @@
+{
+  "ai-sales": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1472,
+    "height": 920,
+    "placeholder": "#7f7f7f"
+  },
+  "japanese-restaurant": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1472,
+    "height": 920,
+    "placeholder": "#241815"
+  },
+  "nimbus-crm": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1485,
+    "height": 928,
+    "placeholder": "#b9c3d2"
+  },
+  "prmpt": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1472,
+    "height": 920,
+    "placeholder": "#696868"
+  },
+  "productivity-bot": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1536,
+    "height": 960,
+    "placeholder": "#f9f9fb"
+  },
+  "stipula-legal": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1478,
+    "height": 924,
+    "placeholder": "#101724"
+  }
+}

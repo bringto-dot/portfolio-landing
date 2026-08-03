@@ -1,0 +1,376 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Tokens.
+
+   Two colours carry the whole site: paper and ink. Everything else earns its
+   place by meaning — red for the way I don't work, blue for the way I do, and
+   six brand colours that belong to the projects rather than to the page.
+
+   A real pair of typefaces, not one grotesk doing both jobs: Manrope is the
+   voice the page speaks in, Inter is the voice the interface speaks in.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-ink: #0a0a0b;
+  --color-ink-2: #141417;
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f4f5;
+
+  /* Foreground on paper. */
+  --color-graphite: #131316;
+  --color-graphite-2: #6b6b74;
+  --color-graphite-3: #a5a5ae;
+
+  /* Foreground on ink. */
+  --color-chalk: #f5f5f6;
+  --color-chalk-2: #a0a0a9;
+  --color-chalk-3: #61616b;
+
+  /* Meaning, used nowhere else. */
+  --color-signal-red: #e0454b;
+  --color-signal-blue: #4d7dff;
+
+  --font-display: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* One long soft settle for entrances, one symmetric curve for panels that
+     move both ways, one short curve for hover. Nothing else. */
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-panel: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-hover: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   The stage.
+
+   The page has no per-section backgrounds. One fixed layer sits under
+   everything and a single controller repaints it from scroll position — see
+   src/stage/. It writes these properties and nothing else, which is why
+   scrolling costs no React renders at all.
+
+   Registering them with @property gives the browser a type to work with, so a
+   colour transition interpolates instead of snapping between keywords.
+--------------------------------------------------------------------------- */
+@property --stage {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffffff;
+}
+
+@property --stage-tone {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/** How close the pointer is to an item in the services list. */
+@property --near {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+:root {
+  /* Derived from --stage-tone by the controller. Every surface reads these
+     rather than hard-coding black or white, so one page works on six
+     backgrounds. */
+  --stage-fg: #0a0a0b;
+  --stage-fg-2: #6b6b74;
+  --stage-fg-3: #a5a5ae;
+  --stage-line: rgb(10 10 11 / 0.1);
+
+  --glass-bg: rgb(255 255 255 / 0.5);
+  --glass-line: rgb(10 10 11 / 0.1);
+  --glass-line-hi: rgb(10 10 11 / 0.2);
+  --glass-shadow: 0 1px 2px rgb(10 10 11 / 0.04), 0 12px 40px -12px rgb(10 10 11 / 0.16);
+  --glass-sheen: rgb(255 255 255 / 0.5);
+
+  --gutter: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 2.5rem;
+  }
+}
+
+@layer base {
+  html {
+    background: #ffffff;
+    scroll-behavior: smooth;
+    /* `clip`, never `hidden` — `hidden` would make the root a scroll container
+       and quietly kill every `position: sticky` on the page. */
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    margin: 0;
+    /* Transparent: the fixed stage layer behind the app paints the page. */
+    background: transparent;
+    color: var(--stage-fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: color 0.2s linear;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    /* Display sizes need their tracking pulled in; the default is set for text
+       at 16px and looks slack at 100. */
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  ::selection {
+    background: var(--stage-fg);
+    color: var(--stage);
+  }
+
+  /* Visible only for keyboard users, and it has to read on all six stage
+     colours — hence the ring in the current foreground, not a fixed blue. */
+  :focus-visible {
+    outline: 2px solid var(--stage-fg);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* -------------------------------------------------------------------------
+     Glass. One recipe, used by the header, the project cards and the contact
+     fan; only the tint changes.
+
+     Three ingredients, and it needs all three. A saturating backdrop blur, a
+     gradient *edge* painted by a masked pseudo-element (border-image cannot
+     follow a border-radius), and a specular sheen the components add on hover.
+     Any two of the three read as "translucent div".
+
+     It is also only ever placed over something with structure — large type, the
+     point field, a project's colour field. Blur over an empty background has
+     nothing to refract and looks like flat opacity.
+  ------------------------------------------------------------------------- */
+  .glass {
+    position: relative;
+    isolation: isolate;
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    /* Saturation stays close to 1. The usual `saturate(180%)` is tuned for
+       glass over photography; over a flat, already-saturated field — the deep
+       red project, the navy one — it has nothing to reveal and simply repaints
+       the header a different colour from the page it is sitting on. */
+    -webkit-backdrop-filter: blur(28px) saturate(118%);
+    backdrop-filter: blur(28px) saturate(118%);
+  }
+
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      145deg,
+      var(--glass-line-hi),
+      var(--glass-line) 38%,
+      transparent 62%,
+      var(--glass-line-hi)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Safari on iOS drops backdrop-filter inside a 3D-transformed subtree. The
+     project card flips, so it opts out of the blur and pays with opacity. */
+  .glass--flat {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* -------------------------------------------------------------------------
+     Reveal. The visible state is the default and JavaScript takes it away, so
+     with scripting off the page is simply there rather than blank.
+  ------------------------------------------------------------------------- */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.9s var(--ease-settle),
+      transform 0.9s var(--ease-settle);
+    will-change: opacity, transform;
+  }
+
+  .js .reveal.is-in {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* -------------------------------------------------------------------------
+     Typed text. Every word is present from the start and only opacity moves,
+     so the paragraph never reflows while it is being written.
+  ------------------------------------------------------------------------- */
+  .js .typed .type-word {
+    opacity: 0;
+  }
+
+  .js .typed .type-word.is-typed {
+    opacity: 1;
+  }
+
+  /* A hairline, not a blinking block. It marks where the writing is and then
+     leaves — a caret that stays behind after the text is finished is a widget,
+     not a sentence. */
+  .js .typed .type-word.is-caret::after {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 1.05em;
+    margin-left: 1px;
+    vertical-align: -0.2em;
+    background: currentColor;
+    transition: opacity 0.4s var(--ease-hover);
+  }
+
+  .js .typed.is-done .type-word::after {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .typed .type-word {
+      opacity: 1;
+    }
+
+    .js .typed .type-word.is-caret::after {
+      content: none;
+    }
+  }
+
+  /* -------------------------------------------------------------------------
+     Services list. Every line is legible on its own; the pointer only decides
+     which of them is *most* legible at any moment. `is-proximate` is added by
+     the hook, so without a fine pointer — or without JavaScript — the list is
+     simply a list at full contrast.
+  ------------------------------------------------------------------------- */
+  .is-proximate [data-near] {
+    /* Rest is the secondary tier, not the tertiary one. Twenty-two lines of
+       near-invisible grey whenever the cursor happens to be elsewhere is not a
+       subtle effect, it is an unreadable list — the pointer decides which line
+       is *most* legible, never whether the list is legible at all. */
+    color: color-mix(
+      in srgb,
+      var(--stage-fg) calc(var(--near, 0) * 100%),
+      var(--stage-fg-2)
+    );
+    transform: translateX(calc(var(--near, 0) * 6px));
+  }
+
+  /* -------------------------------------------------------------------------
+     FAQ. The divider under a question is the control: it draws itself across
+     in full ink when the row opens, and shows a short leading stroke on hover
+     so the mechanism is visible before you commit to it.
+
+     No rotating chevron and no plus-minus. Those are the two things every
+     accordion on the internet has, and the seam opening is a better description
+     of what is actually happening than an icon standing beside it.
+  ------------------------------------------------------------------------- */
+  .faq-draw {
+    transform: scaleX(var(--draw, 0));
+    transition: transform 0.75s var(--ease-settle);
+  }
+
+  .faq-row:hover .faq-draw {
+    transform: scaleX(max(var(--draw, 0), 0.14));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-draw {
+      transition-duration: 0.01ms;
+    }
+  }
+
+  /* A hairline that reads on every stage colour. */
+  .rule {
+    height: 1px;
+    background: var(--stage-line);
+  }
+
+  /* Digits that don't jitter as a counter ticks. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
