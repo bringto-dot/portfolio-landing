@@ -1,10 +1,12 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { Container, Section } from "../components/layout/Section";
-import { PROJECTS } from "../content/projects";
+import { Button } from "../components/ui/Button";
+import { PROJECTS, repoUrl } from "../content/projects";
 import { useI18n } from "../i18n";
 import { EASE } from "../lib/anim";
 import { useEasedColour } from "../lib/useEasedColour";
+import { useMediaQuery } from "../lib/useMediaQuery";
 import { useReducedMotion } from "../lib/useReducedMotion";
 import { useStageSection } from "../stage/useStageSection";
 import { ProjectCard } from "./projects/ProjectCard";
@@ -52,6 +54,28 @@ export function Projects() {
   const [view, setView] = useState({ index: 0, previous: -1, direction: 1 });
   const [flipped, setFlipped] = useState(false);
   const { index, previous, direction } = view;
+
+  /**
+   * Whether the card has a reverse.
+   *
+   * The card is a 16:10 box sized from the column it sits in, so on a phone it
+   * is around 200px tall — and a description of 140 to 220 characters plus a
+   * link does not go in there at a size anyone can read. Measured: the reverse
+   * runs past the card's bottom edge on everything below about 540px, worst by
+   * 184px at 360px wide, which is most of the card again. No amount of tighter
+   * type closes a gap that size.
+   *
+   * So below the breakpoint the card keeps one face and what the reverse would
+   * have said is said under it — in the room this section already had, since it
+   * is a `100svh` block holding a card half that tall.
+   */
+  const flippable = useMediaQuery("(min-width: 40rem)");
+
+  // Turning the phone, or dragging a desktop window narrow, takes the reverse
+  // away from under a card that is currently showing it.
+  useEffect(() => {
+    if (!flippable) setFlipped(false);
+  }, [flippable]);
 
   const project = PROJECTS[index];
   const copy = t.projects.items[project.slug];
@@ -104,7 +128,10 @@ export function Projects() {
       id="projects"
       ref={ref}
       labelledBy="projects-title"
-      className="flex min-h-[100svh] flex-col justify-center py-24 md:py-28"
+      // Less air below `sm`, where the description is a block on the page
+      // rather than a face of the card: the section is carrying an extra
+      // paragraph and a button there, and it still has to land on one screen.
+      className="flex min-h-[100svh] flex-col justify-center py-16 sm:py-24 md:py-28"
     >
       <Container>
         <div className="flex items-baseline justify-between gap-6">
@@ -128,7 +155,11 @@ export function Projects() {
           style={{
             // The card is sized from the height it has available rather than
             // the width, so a 16:10 shot, both rails and the header always fit
-            // one screen without the page deciding to scroll a little.
+            // one screen without the page deciding to scroll a little. The
+            // 340px is the rails around a card that carries its description on
+            // its reverse; where the description sits below instead, the extra
+            // block is paid for out of this section's padding rather than out
+            // of the card.
             maxWidth: "min(980px, calc((100svh - 340px) * 1.6))",
             aspectRatio: "16 / 10",
           }}
@@ -144,11 +175,12 @@ export function Projects() {
               offset={
                 position === index ? 0 : position === previous ? -direction : direction
               }
-              flipped={position === index && flipped}
+              flipped={flippable && position === index && flipped}
               onFlip={() => setFlipped((open) => !open)}
               labels={{ open: t.projects.open, back: t.projects.back }}
               still={still}
               priority={position === 0}
+              flippable={flippable}
             />
           ))}
         </div>
@@ -186,6 +218,32 @@ export function Projects() {
             <Arrow label={t.projects.next} onClick={() => go(1)} />
           </div>
         </div>
+
+        {/* The reverse, unfolded. Same two things it carried — what the project
+            was, and where to read it — set as page text rather than as a face
+            of the card, because at this width the card has no room for them.
+            It changes with the carousel on the same beat the title does. */}
+        {!flippable && (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={project.slug}
+              className="mt-8"
+              initial={still ? undefined : { opacity: 0, y: 12 }}
+              animate={still ? undefined : { opacity: 1, y: 0 }}
+              exit={still ? undefined : { opacity: 0, y: -8 }}
+              transition={{ duration: 0.4, ease: EASE.settle }}
+            >
+              <p className="max-w-[46ch] text-[1.02rem] leading-[1.7] text-[var(--stage-fg-2)]">
+                {copy.description}
+              </p>
+              <div className="mt-7">
+                <Button href={repoUrl(project)} target="_blank" rel="noreferrer" arrow>
+                  {t.projects.open}
+                </Button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        )}
 
         {/* The carousel is a control, and a control that only says anything in
             pixels is invisible to anyone not looking at it. */}
