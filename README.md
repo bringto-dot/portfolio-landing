@@ -1,158 +1,254 @@
 # bringto
 
-**[Live demo](https://bringto-dot.github.io/portfolio-landing/)**
+**Language:** 🇬🇧 [English](README.md) · 🇷🇺 [Русский](README.ru.md)
 
-*[Читать на русском](README.ru.md)*
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-38BDF8)
+![Motion](https://img.shields.io/badge/Motion-12-0055FF)
+![Sharp](https://img.shields.io/badge/Sharp-image%20pipeline-5C913B)
 
-A portfolio site where the site itself is the piece of work being shown. It has
-to hold six earlier projects — a brutalist fashion brand, a red Japanese
-restaurant, a navy-and-brass law practice, a blue CRM dashboard, a white AI
-course and a Telegram bot — without the shell picking a fight with any of them.
-
-No component library, no page builder, no UI kit. React, TypeScript and CSS.
+**[Live Demo](https://bringto-dot.github.io/portfolio-landing/)**
 
 ![Hero](docs/preview/01-hero.png)
 
-## What this project demonstrates
+A personal portfolio where the portfolio itself is part of the work being
+presented.
 
-- **One background for the whole document, not one per section.** There is no
-  `background` on any section here. A single fixed layer sits under the page and
-  one controller repaints it from scroll position, blending between whatever the
-  sections above and below ask for. That one mechanism produces the white-to-ink
-  turn under "Мой подход", the six brand colours in the carousel, the red-to-navy
-  drift under the two ways of working, and the inverted closing screen. Adding a
-  seventh colour is one line in a section, not a seventh copy of a transition.
+The site brings six different projects into one interface: a brutalist
+fashion concept, a Japanese restaurant, a legal practice, a CRM dashboard,
+an AI course landing page, and a Telegram bot.
 
-- **Scrolling the whole page costs zero React renders.** The controller writes
-  CSS custom properties — `--stage`, `--stage-fg`, the glass tint — straight onto
-  the document element and never touches state. Everything that needs to know
-  what colour the page currently is reads those in CSS. It also skips the write
-  entirely when the value has not changed, so a full-viewport background repaint
-  only happens while the colour is genuinely moving.
+The challenge was not only to display them, but to make very different
+visual identities coexist without flattening them into one generic
+portfolio template.
 
-- **A foreground that is derived rather than hard-coded.** Which of black or
-  white the text takes is decided from the background's WCAG relative luminance,
-  with the switch centred on L≈0.18 — the point where white text and black text
-  have exactly equal contrast, not the "50% grey" that intuition suggests and
-  that picks the wrong colour on everything in between. The secondary and
-  tertiary text tiers are then mixed *back into* the current background instead
-  of being two fixed greys, which is what makes one page legible on white, on
-  ink, on deep red, on navy, on yellow and on light blue. Two fixed greys tuned
-  for a near-black page put tertiary text at about 1.6:1 on the red one.
+## The visual system
 
-- **Three typefaces, and the third one is the argument.** Manrope is the
-  engineered voice and carries the structure; Inter is the interface and never
-  gets a display size; Playfair Display appears exactly once per heading, in
-  italic, on the word holding the human half of the sentence — «идеи»,
-  «помочь», «ваш». The site turns on *an idea, then the quality of the build*,
-  so the type says it too. The marker lives in the dictionary string, which
-  means a translator moves the emphasis by moving the asterisks.
+The page uses one continuous background layer across the entire document.
 
-- **Buttons machined out of CSS.** The primary button is a turning chrome ring
-  around a bevelled dark plate with a specular band that crosses it on hover,
-  and it looks identical on all six stage colours — an edge made of metal
-  carries its own contrast, where a pill that merely inverts the background
-  disappears the moment the background is mid-toned, which two of the six are.
-  The obvious alternative is a WebGL shader per button; that is one live
-  graphics context each, and browsers keep about sixteen before they start
-  silently killing the oldest.
+As the user moves through the sections, that layer transitions between the
+visual identities of the projects. The same mechanism handles the light
+opening, the individual project colours, the transition between sections,
+and the inverted closing state.
 
-- **A card reverse that is opaque on purpose.** `backface-visibility` stops
-  being reliable as soon as anything in the subtree makes a stacking context,
-  and when it gives out the front shows through the back mirror-imaged — the
-  project render sitting behind its own description. The reverse is a solid
-  plate holding that project's own stage colour, one step darker: the channels
-  are multiplied rather than mixed towards black, so the red project's reverse
-  is still red and the navy one still navy. Under the near-black project there
-  is nowhere darker to go, so that one steps up towards chalk instead — the step
-  is what matters, not its direction. A flat plane a shade below the page reads
-  as an object without competing with the type on top of it, which is exactly
-  what an enlarged screenshot behind the text did.
-
-- **8.66 MB of project renders down to 0.60 MB.** A build script crops the
-  caption baked into each source render — it duplicates the title the page
-  already shows and, being pixels, cannot follow the language switch — normalises
-  everything to a single 16:10 frame so the card never letterboxes, and emits
-  AVIF and WebP at three widths behind `srcset`. One card at 1280px costs about
-  22 KB. Dimensions ship in the markup, so there is no layout shift.
-
-- **A figure that argues the same thing its caption does.** The decorative half
-  of "Мой подход" is a field of 936 points that begins scattered and resolves,
-  as the section crosses the viewport, into a twelve-column layout grid with real
-  gutters — an idea becoming a structure. An even lattice would have been a dot
-  texture; the grid is the thing a developer actually means by structure. Canvas,
-  one rAF loop, and the cursor carries both a lens and a light through it.
-
-- **Text that is written rather than faded in.** The three paragraphs about how
-  I work arrive a word at a time, with a longer pause after a full stop than
-  after a comma. Deliberately not character by character: at 750 characters, any
-  speed slow enough to read as typing is six seconds of watching a cursor. Every
-  word is in the DOM from the first frame and only its opacity changes, so
-  nothing reflows while it runs and a screen reader gets the whole text at once.
-
-- **An accordion whose control is its own divider.** No rotating chevron, no
-  plus-minus. The hairline under a question draws itself across in full ink as
-  the row opens, and shows a short leading stroke on hover so the mechanism is
-  visible before you commit to it. The seam opening is a better description of
-  what is happening than an icon standing next to it.
-
-- **An invitation that turns into a contact.** The closing card is not replaced
-  by five cards, it *is* the middle one: it flips on its own axis into Telegram
-  and the other four leave from underneath it, two each way. All five are the
-  same card scaled about its own centre, which is why the row keeps one set of
-  proportions instead of five. Everything on them is centred — in a row that
-  overlaps, whatever sits against a card's left or right edge is the first thing
-  to disappear, and a name at the midpoint is the one part nothing covers. Each
-  carries its service's colour as a full stop, and lights that colour behind
-  itself when it is the one being looked at.
-
-- **Real i18n, not a plugin.** One typed dictionary per language, so a missing
-  string is a compile error rather than a blank spot in whichever language nobody
-  thinks to check. The choice is detected on first visit, kept in
-  `localStorage`, and drives `<title>`, `lang` and the meta description. All
-  three font families ship one `@font-face` per unicode range, so an English reader
-  never downloads the Cyrillic subset.
-
-## Screens
-
-| | |
-|---|---|
-| ![Projects](docs/preview/02-projects.png) | ![Approach](docs/preview/03-approach.png) |
+Sections do not own their own page background. Instead, they describe the
+stage they need, while a shared controller interpolates the current
+background and foreground values.
 
 ![Contact](docs/preview/04-contact.png)
 
-## Notes on behaviour
+## Projects as the interface
 
-`prefers-reduced-motion` is honoured everywhere and is not a switch that turns
-animation off and leaves the layout broken: the two-way approach section drops
-its sticky travel and becomes a plain two-column comparison, the point field
-draws its resolved grid once, the typed paragraphs are simply present, and the
-services list sits at full contrast. Without JavaScript the page is ordinary
-visible content rather than a column of empty sections — `.reveal` only hides
-itself under a class added at boot.
+The project section is built as an interactive carousel rather than a
+conventional grid of portfolio cards.
 
-The carousel answers arrow keys while it is the thing on screen, takes a swipe,
-and keeps every card that is not showing out of the tab order with `inert`.
-Focus rings are drawn in the current foreground, because a fixed blue ring
-disappears on two of the six project colours.
+Each project carries its own visual identity into the surrounding
+interface. The cards can be navigated with the keyboard or a swipe, while
+cards that are not active are removed from the tab order.
 
-## Stack
+The reverse side of a project card uses an opaque surface derived from the
+project's own colour. This keeps the transition visually stable even when
+the page moves between very different backgrounds.
 
-React 19 + TypeScript, Vite 6, Tailwind CSS v4 (`@tailwindcss/vite`, tokens in
-`@theme`), `motion` for animation, `sharp` for the image pipeline. Self-hosted
-Manrope, Inter and Playfair Display, each with a job of its own rather than one
-grotesk asked to do all three.
+![Projects](docs/preview/02-projects.png)
 
-The whole page — every project render, both font families, all the JavaScript —
-transfers about 325 KB over twenty-two requests. Gzipped, that is 60 KB of React,
-46 KB of `motion`, 20 KB of application code and 8 KB of CSS, in separate chunks
-so a copy edit does not invalidate the cached vendor code.
+## A background that controls contrast
 
-```bash
-npm install
-npm run dev       # localhost:5173
-npm run build     # tsc --noEmit && vite build
-npm run images    # regenerate public/projects from assets/projects
+The foreground is not tied to a fixed black-or-white theme.
+
+The interface calculates the relative luminance of the current background
+and uses it to decide whether the primary text should be light or dark.
+Secondary and tertiary text values are then mixed with the active
+background rather than relying on two fixed grey tones.
+
+This allows the same typography system to remain readable while the page
+moves through white, near-black, red, navy, yellow, and blue stages.
+
+The result is a single interface that changes its visual character without
+requiring separate themes for every section.
+
+## Turning a visual idea into structure
+
+The "Approach" section uses a canvas field made from 936 points.
+
+It begins as a scattered composition and gradually resolves into a
+twelve-column layout grid as the section moves through the viewport.
+
+The animation is deliberately tied to the meaning of the section: an
+abstract field becomes a visible structure.
+
+The canvas uses one `requestAnimationFrame` loop, with the cursor
+controlling both a local lens effect and a moving light across the field.
+
+![Approach](docs/preview/03-approach.png)
+
+## Motion without breaking the content
+
+Motion is used to reveal structure rather than simply make elements
+appear.
+
+The three paragraphs describing the working approach are revealed word by
+word. A longer pause follows a full stop than a comma, giving the text a
+natural reading rhythm.
+
+The complete text remains in the DOM from the beginning. Only opacity
+changes during the animation, so the page does not reflow while the text
+is being revealed and assistive technologies still receive the complete
+content.
+
+The project also respects `prefers-reduced-motion`. Complex sections
+switch to simpler layouts instead of leaving an empty or broken
+composition when animation is reduced.
+
+## Project image pipeline
+
+Project screenshots are prepared before they reach the browser.
+
+A build script processes the source renders by:
+
+- removing captions that are already represented by the interface
+- normalizing images to a shared 16:10 frame
+- generating AVIF and WebP versions
+- producing multiple widths for responsive loading
+- preserving dimensions in the markup to avoid layout shift
+
+This reduces the project image set from roughly 8.66 MB of source renders
+to about 0.60 MB of generated assets.
+
+The browser can then select an appropriate image size through `srcset`
+instead of downloading the largest version for every card.
+
+## Typography
+
+Three typefaces are used for three different roles.
+
+Manrope carries the main visual structure and display typography.
+
+Inter is reserved for interface elements and supporting text.
+
+Playfair Display appears selectively inside headings to create a contrast
+between the technical structure of the interface and the more human parts
+of the copy.
+
+The emphasized words are part of the translation data, so their position
+can change with the language rather than being hard-coded into the
+component markup.
+
+## Localization
+
+The site supports Russian and English through a typed dictionary system.
+
+A language is selected using the following priority:
+
+1. previously saved choice
+2. browser language
+3. Russian or English according to the available preference
+
+The selected language is stored in `localStorage` and controls the
+interface as well as document-level metadata.
+
+Switching languages updates:
+
+- visible interface text
+- `<html lang>`
+- document title
+- meta description
+
+Because both dictionaries implement the same typed structure, a missing
+translation becomes a compile-time problem rather than an empty string
+appearing unnoticed in one version.
+
+## Interaction and accessibility
+
+The carousel supports keyboard navigation and touch gestures.
+
+Inactive project cards are marked `inert`, keeping them out of the tab
+order while another card is active.
+
+Focus indicators use the current foreground colour instead of a fixed
+colour that could disappear against one of the page's background stages.
+
+The page also keeps its content available without JavaScript. Reveal
+animations only hide their content after the application initializes, so
+the document does not become a sequence of empty sections when scripting
+is unavailable.
+
+## Front-end structure
+
+The application is divided into page sections, shared components, content
+dictionaries, and the stage system responsible for the global visual
+state.
+
+```text
+src/
+├── components/
+├── content/
+├── lib/
+├── sections/
+├── stage/
+├── App.tsx
+├── i18n.tsx
+├── index.css
+└── main.tsx
 ```
 
-Deployed to GitHub Pages from `main` by `.github/workflows/deploy.yml`.
+The main page composes the sections through a shared `StageProvider`,
+while the i18n provider supplies the active language and content
+dictionary.
+
+This keeps the page-level composition separate from the mechanisms that
+control the global stage, localization, animation, and content.
+
+## Technical foundation
+
+The project uses:
+
+- React 19 for the interface
+- TypeScript for typed application structure
+- Vite for the build system
+- Tailwind CSS 4 for the styling foundation
+- Motion for interface animation
+- Sharp for the project image pipeline
+- self-hosted Manrope, Inter, and Playfair Display fonts
+
+There is no UI kit, component library, or page builder behind the
+interface.
+
+The visual system is built specifically for the project, including the
+stage transitions, project cards, canvas composition, typography, and
+responsive behavior.
+
+## Deployment
+
+The project is deployed to GitHub Pages from `main` through GitHub
+Actions.
+
+The production build runs TypeScript checks before Vite creates the final
+bundle. Project images can be regenerated through the dedicated
+image-processing script when source renders change.
+
+## Project scope
+
+This repository is the portfolio site itself.
+
+The projects displayed inside it are presented as individual portfolio
+works, while this application demonstrates how those different visual
+systems can be brought together into one coherent interface.
+
+The goal is not to hide the differences between projects, but to build a
+shell flexible enough to preserve them.
+
+## Result
+
+The portfolio is designed so that the interface itself demonstrates the
+same qualities it presents in the projects.
+
+The page adapts its background, contrast, typography, motion, imagery, and
+interaction model as the user moves through the work.
+
+The result is not a neutral container for screenshots. It is another
+frontend project in the portfolio, with its own visual system, interaction
+design, performance considerations, responsive behavior, localization, and
+accessibility built into the experience.
