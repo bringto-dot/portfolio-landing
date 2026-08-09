@@ -12,7 +12,8 @@ export type ProjectSlug =
   | "japanese-restaurant"
   | "stipula-legal"
   | "nimbus-crm"
-  | "productivity-bot";
+  | "productivity-bot"
+  | "pag-commodities";
 
 export type ContactKey = "telegram" | "email" | "discord" | "github" | "kwork";
 

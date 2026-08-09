@@ -26,6 +26,15 @@
     "height": 928,
     "placeholder": "#b9c3d2"
   },
+  "pag-commodities": {
+    "widths": [
+      768,
+      1280
+    ],
+    "width": 1472,
+    "height": 920,
+    "placeholder": "#44454a"
+  },
   "prmpt": {
     "widths": [
       768,

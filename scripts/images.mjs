@@ -45,6 +45,7 @@ const TOP_TRIM = {
   "stipula-legal": 100,
   "nimbus-crm": 96,
   "productivity-bot": 24,
+  "pag-commodities": 104,
 };
 
 /**

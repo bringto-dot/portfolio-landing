@@ -80,6 +80,12 @@ export const en: Dict = {
         description:
           "A Telegram bot for personal productivity, with subscriptions, a referral programme and a built-in admin panel. Evidence of shipping complete products, not only interfaces.",
       },
+      "pag-commodities": {
+        title: "PAG Commodities",
+        kind: "Bilingual website on Tilda",
+        description:
+          "A corporate website for Pacific Alliance Global, a company operating across global commodity flows and strategic raw-material markets. The project emphasises the scale of the business, its international trade infrastructure and its reach across the major markets of Asia, the CIS and the EAEU.",
+      },
     },
   },
 

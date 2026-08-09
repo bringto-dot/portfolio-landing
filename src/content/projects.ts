@@ -51,6 +51,14 @@ export const PROJECTS: readonly Project[] = [
     stage: "#5ac8fa",
     shot: SHOTS["productivity-bot"],
   },
+  {
+    slug: "pag-commodities",
+    repo: "bringto-dot/pag-commodities-website",
+    // Sampled from the client's own footer, rather than picked — the one
+    // colour a commodities-trading site actually is.
+    stage: "#0d1f33",
+    shot: SHOTS["pag-commodities"],
+  },
 ];
 
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
